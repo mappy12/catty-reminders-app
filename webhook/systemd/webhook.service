@@ -1,0 +1,13 @@
+[Unit]
+Description=GitHub Webhook Handler
+After=network.target
+
+[Service]
+Type=simple
+User=mappy
+WorkingDirectory=/home/mappy/Desktop/catty-reminders-app/webhook
+ExecStart=/usr/bin/python3 /home/mappy/Desktop/catty-reminders-app/webhook/webhook.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
