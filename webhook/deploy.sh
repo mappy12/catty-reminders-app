@@ -3,8 +3,9 @@
 set -e
 
 REPO_URL="https://github.com/mappy12/catty-reminders-app"
-LOG_FILE="/home/mappy/Desktop/catty-reminders-app/webhook/deploy.log"
-APP_DIR="/home/mappy/Desktop/catty-reminders-app"
+LOG_FILE="/home/mappy/webhook/deploy.log"
+APP_DIR="/home/mappy/webhook/deploy.log"
+
 BRANCH=$1
 
 log() {
