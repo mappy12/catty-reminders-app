@@ -9,6 +9,9 @@ jobs:
     runs-on: ubuntu-latest
   
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+    
       - name: Deploy application
         uses: appleboy/ssh-action@v1
         with:
@@ -20,7 +23,7 @@ jobs:
             set -e
             APP_DIR="/home/mappy/Desktop/catty-reminders-app"
             ENV_FILE="$APP_DIR/.env"
-            BRANCH="lab2"
+            COMMIT_SHA="${{ github.sha }}"
             LOG_FILE="/home/mappy/webhook/deploy.log"
             
             log() {
@@ -28,14 +31,14 @@ jobs:
             }
             
             log "НАЧАЛО ДЕПЛОЯ (GitHub Actions CD)"
-            log "Ветка: $BRANCH"
+            log "Коммит релиза: $COMMIT_SHA"
 
             cd $APP_DIR
 
             log "Обновление кода..."
             git fetch origin
-            git checkout $BRANCH
-            git reset --hard origin/$BRANCH
+            git checkout --detach $COMMIT_SHA
+            git reset --hard $COMMIT_SHA
 
             DEPLOY_REF=$(git rev-parse HEAD)
             log "SHA коммита: $DEPLOY_REF"
@@ -45,5 +48,5 @@ jobs:
             log "Перезапуск приложения..."
             sudo systemctl restart app
               
-            log "=== ДЕПЛОЙ ДЛЯ ВЕТКИ $BRANCH УСПЕШНО ЗАВЕРШЕН ==="
+            log "=== ДЕПЛОЙ ДЛЯ КОММИТА $COMMIT_SHA УСПЕШНО ЗАВЕРШЕН ==="
 
