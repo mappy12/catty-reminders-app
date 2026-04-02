@@ -3,8 +3,8 @@ on:
   pull_request:
 
 permissions:
-  contents: read
-  packages: write 
+  contents: write
+  packages: write
 
 jobs:
   build_and_test:
