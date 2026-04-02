@@ -16,6 +16,7 @@ jobs:
           port: 3169
           username: mappy
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          timeout: 30m
           script: |
             set -e
 
