@@ -74,7 +74,7 @@ jobs:
         with:
           images: ghcr.io/mappy12/catty-reminders-app
           tags: |
-            type=sha,prefix=,format=short
+            type=sha,prefix=,format=long
             type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=branch
             type=ref,event=pr
