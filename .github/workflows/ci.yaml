@@ -30,6 +30,13 @@ jobs:
 
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
+        
+	- name: Start application in background
+        run: |
+          uvicorn app.main:app --host 0.0.0.0 --port 8181 &
+          sleep 5
+        env:
+          PYTHONPATH: ${{ github.workspace }}
 
       - name: Run tests and save results
         run: |
