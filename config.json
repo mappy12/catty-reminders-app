@@ -3,11 +3,12 @@
         {"username": "tester", "password": "foobar123"}
     ],
     "db_config": {
-        "host": "db",
+        "host": "localhost",
         "port": 5432,
         "user": "user",
         "password": "password",
         "database": "catty"
     },
+    "db_path": "reminder_db.json",
     "secret_key": "Cats are awesome!"
 }
