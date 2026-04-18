@@ -29,9 +29,12 @@ jobs:
             echo "${{ secrets.DOCKER_PAT }}" | docker login ghcr.io -u mappy12 --password-stdin
 
             export DEPLOY_REF=${{ github.sha }}
+            echo "DEPLOY_REF=${DEPLOY_REF}" > .env
+            echo "=== DEPLOY_REF=${DEPLOY_REF} ==="
+            cat .env
             docker compose down
             docker compose pull
-            DEPLOY_REF=${DEPLOY_REF} docker compose up -d --pull always --force-recreate
+            docker compose --env-file .env up -d --pull always --force-recreate
 
             sleep 3
 
