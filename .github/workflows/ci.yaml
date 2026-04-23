@@ -12,20 +12,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      db:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: rootpass
-          MYSQL_DATABASE: catty_reminders
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -prootpass"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,43 +31,7 @@ jobs:
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
 
-      - name: Initialize database
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mysql-client
-          sleep 5
-          mysql -h 127.0.0.1 -u root -prootpass catty_reminders -e "
-            CREATE TABLE IF NOT EXISTS users (
-              id INT AUTO_INCREMENT PRIMARY KEY,
-              username VARCHAR(255) NOT NULL UNIQUE,
-              password VARCHAR(255) NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS reminder_lists (
-              id INT AUTO_INCREMENT PRIMARY KEY,
-              owner VARCHAR(255) NOT NULL,
-              name VARCHAR(255) NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS reminder_items (
-              id INT AUTO_INCREMENT PRIMARY KEY,
-              list_id INTEGER NOT NULL,
-              description TEXT NOT NULL,
-              completed BOOLEAN DEFAULT FALSE
-            );
-            CREATE TABLE IF NOT EXISTS selected_lists (
-              owner VARCHAR(255) PRIMARY KEY,
-              list_id INTEGER NOT NULL
-            );
-            INSERT INTO users (username, password) VALUES ('tester', 'foobar123') ON DUPLICATE KEY UPDATE username=username;
-          "
-
-      - name: Start application in background
-        run: |
-          uvicorn app.main:app --host 0.0.0.0 --port 8181 &
-          sleep 5
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-
-      - name: Run tests and save results
+      - name: Run unit tests and save results
         run: |
           mkdir -p test_results
           pytest tests/test_unit.py -v --tb=short --junit-xml=test_results/junit.xml > test_results/output.txt 2>&1
@@ -129,7 +79,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.DOCKER_PAT }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -139,5 +89,5 @@ jobs:
           build-args: |
             DEPLOY_REF=${{ github.sha }}
           tags: |
-            ghcr.io/mappy12/catty-reminders-app:lab4
-            ghcr.io/mappy12/catty-reminders-app:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/catty-reminders-app:lab4
+            ghcr.io/${{ github.repository_owner }}/catty-reminders-app:${{ github.sha }}
