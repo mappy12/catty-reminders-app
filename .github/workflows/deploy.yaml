@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy app via Docker Compose
+      - name: Deploy via Docker Compose
         uses: appleboy/ssh-action@v1
         with:
           host: course.prafdin.ru
@@ -27,26 +27,26 @@ jobs:
             cd /home/mappy/Desktop/catty-reminders-app
 
             echo "=== Деплой через Docker Compose ==="
-            
-            mkdir -p data
 
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             export DEPLOY_REF=${{ github.sha }}
-            echo "DEPLOY_REF=${DEPLOY_REF}" > .env
-            echo "=== DEPLOY_REF=${DEPLOY_REF} ==="
-            cat .env
+            export GITHUB_REPOSITORY_OWNER=${{ github.repository_owner }}
+            export DB_ROOT_PASSWORD=rootpass
+            export DB_DATABASE=catty_reminders
 
-            echo "${{ secrets.DOCKER_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            sudo docker compose up -d --pull always --remove-orphans --force-recreate
+            docker compose down
+            docker compose pull
+            docker compose up -d --force-recreate --remove-orphans
 
-            sleep 3
+            sleep 5
 
             if docker compose ps | grep -q "Up"; then
               echo "Стек успешно запущен"
+              echo "=== Текущий DEPLOY_REF ==="
+              docker exec catty-app printenv | grep DEPLOY_REF || echo "DEPLOY_REF not set"
             else
               echo "Ошибка: стек не запустился"
               docker compose logs
               exit 1
             fi
-            echo "=== Деплой успешно завершён ==="

@@ -1,43 +1,41 @@
+name: catty-reminders
+
 services:
+  db:
+    image: mariadb:11
+    container_name: catty-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
+      MARIADB_DATABASE: ${DB_DATABASE:-catty_reminders}
+      MARIADB_USER: ${DB_USER:-catty_user}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-catty_pass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - catty-network 
+
   app:
-    image: ghcr.io/mappy12/catty-reminders-app:${DEPLOY_REF}
+    build: .
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-mappy12}/catty-reminders-app:${DEPLOY_REF:-latest}
+    container_name: catty-app
+    restart: unless-stopped
+    environment:
+      - DEPLOY_REF=${DEPLOY_REF:-development}
     ports:
       - "8181:8181"
-    environment:
-      - DEPLOY_REF=${DEPLOY_REF}
     volumes:
-      - ./config.json:/catty-reminders-app/config.json:ro
+      - ./config.json:/app/config.json:ro
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     networks:
-      - app-network
-    pull_policy: always
-
-  db:
-    image: mysql:8.0
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: mypass
-      MYSQL_USER: user
-      MYSQL_PASSWORD: mypass
-      MYSQL_DATABASE: catty_reminders
-
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -pmypass"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
-
-    volumes:
-      - db-data:/var/lib/mysql
-    networks:
-      - app-network
-
-volumes:
-  db-data:
+      - catty-network
 
 networks:
-  app-network:
+  catty-network:
     driver: bridge
+
+volumes:
+  mariadb_data:
